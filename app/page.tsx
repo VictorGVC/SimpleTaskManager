@@ -1,11 +1,11 @@
 import { TRPCProvider } from '../src/providers/trpc-provider';
 import { TaskList } from '../src/components/task-list';
 import { CreateTaskButton } from '../src/components/create-task-button';
-import { taskStorage } from '../src/server/storage';
+import { TaskService } from '../src/server/modules/task/task.service';
 
 async function getTasks() {
   try {
-    return taskStorage.getAll();
+    return TaskService.getAll();
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return [];
