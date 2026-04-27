@@ -51,6 +51,8 @@ npm run dev
 
 4. Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
 
+**Deploy no vercel:** [https://simple-task-manager-sooty.vercel.app/](https://simple-task-manager-sooty.vercel.app/)
+
 ## 📖 Como Usar
 
 ### Criar uma Tarefa
@@ -138,6 +140,14 @@ interface Task {
 ## 🧪 Testes
 
 ### Executar Testes
+Os testes são testes de integração que requerem que o servidor de desenvolvimento esteja rodando.
+
+1. Inicie o servidor de desenvolvimento:
+```bash
+npm run dev
+```
+
+2. Em um terminal separado, execute os testes:
 ```bash
 npm test
 ```
