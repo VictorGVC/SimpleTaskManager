@@ -7,7 +7,7 @@ import { trpc } from '../trpc/trpc';
 interface TaskItemProps {
   task: Task;
   onDelete: (id: string) => void;
-  onUpdate: () => void;
+  onUpdate: (updatedTask: Task) => void;
 }
 
 export function TaskItem({ task, onDelete, onUpdate }: TaskItemProps) {
@@ -50,9 +50,13 @@ export function TaskItem({ task, onDelete, onUpdate }: TaskItemProps) {
       });
 
       if (result.success) {
-        setIsEditing(false);
-        onUpdate();
         setError(null);
+        setIsEditing(false);
+        onUpdate({
+          ...task,
+          titulo: editForm.titulo.trim(),
+          descricao: editForm.descricao.trim() || undefined,
+        });
       }
     } catch (error) {
       setError('Erro ao atualizar tarefa');

@@ -5,7 +5,7 @@ import { trpc } from '../trpc/trpc';
 import { TaskInput } from '../server/types';
 
 interface TaskFormProps {
-  onSuccess: () => void;
+  onSuccess: (task: any) => void;
   onCancel: () => void;
 }
 
@@ -35,7 +35,7 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
       if (result.success) {
         setForm({ titulo: '', descricao: undefined });
         setError(null);
-        onSuccess();
+        onSuccess(result.data);
       }
     } catch (error) {
       setError('Erro ao criar tarefa');

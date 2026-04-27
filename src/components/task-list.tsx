@@ -19,18 +19,7 @@ export function TaskList({ initialTasks }: TaskListProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastTaskElementRef = useCallback((node: HTMLDivElement | null) => {
-    if (isLoading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreTasks();
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [isLoading, hasMore]);
+  const prevDataLengthRef = useRef(0);
 
   const { data, refetch } = trpc.task.getAll.useQuery(undefined, {
     initialData: { success: true, data: Array.isArray(initialTasks) ? initialTasks : [] },
@@ -58,15 +47,34 @@ export function TaskList({ initialTasks }: TaskListProps) {
     setIsLoading(false);
   }, [currentPage, tasks, hasMore, isLoading]);
 
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastTaskElementRef = useCallback((node: HTMLDivElement | null) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreTasks();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore, loadMoreTasks]);
+
   useEffect(() => {
     if (data?.success) {
+      const currentDataLength = data.data.length;
+      const dataLengthChanged = currentDataLength !== prevDataLengthRef.current;
       setTasks(data.data);
       setError(null);
-      // Reset pagination when data changes
-      const initialDisplay = data.data.slice(0, TASKS_PER_PAGE);
-      setDisplayedTasks(initialDisplay);
-      setCurrentPage(0);
-      setHasMore(data.data.length > TASKS_PER_PAGE);
+      
+      // Only reset pagination when actual tasks are added/deleted
+      if (dataLengthChanged) {
+        const initialDisplay = data.data.slice(0, TASKS_PER_PAGE);
+        setDisplayedTasks(initialDisplay);
+        setCurrentPage(0);
+        setHasMore(data.data.length > TASKS_PER_PAGE);
+      }
+      
+      prevDataLengthRef.current = currentDataLength;
     }
   }, [data]);
 
@@ -74,12 +82,10 @@ export function TaskList({ initialTasks }: TaskListProps) {
     try {
       const result = await deleteTask.mutateAsync({ id });
       if (result.success) {
-        const updatedTasks = tasks.filter(task => task.id !== id);
-        setTasks(updatedTasks);
-        setDisplayedTasks(prev => prev.filter(task => task.id !== id));
         setError(null);
         setSuccess('Tarefa excluída com sucesso!');
         setTimeout(() => setSuccess(null), 3000);
+        refetch();
       }
     } catch (error) {
       setError('Erro ao deletar tarefa');
@@ -87,6 +93,12 @@ export function TaskList({ initialTasks }: TaskListProps) {
     }
   };
 
+  const handleUpdateTask = (updatedTask: Task) => {
+    // Update local state immediately with backend response
+    setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
+    setDisplayedTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
+  };
+  
   if (isLoading && displayedTasks.length === 0) {
     return (
       <div className="text-center py-8">
@@ -123,7 +135,7 @@ export function TaskList({ initialTasks }: TaskListProps) {
               <TaskItem
                 task={task}
                 onDelete={handleDeleteTask}
-                onUpdate={() => refetch()}
+                onUpdate={handleUpdateTask}
               />
             </div>
           ))}
