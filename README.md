@@ -35,7 +35,7 @@ Um sistema simples de gerenciamento de tarefas construído com Next.js v16, Type
 
 1. Clone o repositório:
 ```bash
-git clone <repository-url>
+git clone https://github.com/VictorGVC/SimpleTaskManager.git
 cd simple-task-manager
 ```
 
@@ -165,4 +165,3 @@ npm test
 - **Paginação Inteligente**: Reset apenas quando o número de tarefas muda, evitando re-render desnecessário
 - **SuperJSON**: Serialização eficiente para preservar tipos Date e outros objetos complexos
 - **React Query**: Cache automático e sincronização de dados entre cliente e servidor
-
